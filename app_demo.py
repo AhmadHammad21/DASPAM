@@ -13,7 +13,7 @@ with open('./artifacts/model.pkl', 'rb') as file:
     loaded_pipeline = pickle.load(file)
 
 
-ingredients_table = pd.read_csv("data\processed\Ingredients_Weights.csv")
+ingredients_table = pd.read_csv("./data/processed/Ingredients_Weights.csv")
 
 st.set_page_config(page_title="DASPAM")
 st.title("DASPAM")
