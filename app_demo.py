@@ -15,10 +15,10 @@ with open('./artifacts/model.pkl', 'rb') as file:
 
 ingredients_table = pd.read_csv("./data/processed/Ingredients_Weights.csv")
 
-st.set_page_config(page_title="DASPAM")
-st.title("DASPAM")
+st.set_page_config(page_title="DemandGuru")
+st.title("DemandGuru")
 st.write(
-    "Welcome to ***DASPAM*** your personal Demand and Supply predictive Algorithmic Model"
+    "Welcome to ***DemandGuru*** your personal Demand and Supply predictive Algorithmic Model"
 )
 # Display the image with Streamlit
 st.image("components/res.jpg", use_column_width=True, output_format='auto')
