@@ -7,88 +7,97 @@ import numpy as np
 import warnings 
 warnings.filterwarnings("ignore")
 
-# variables
-data_file = 0
-data_frame = 0
-pizza_type = 0
-pizza_size = 0
-
-
-# Load the JSON file
-with open("./artifacts/pizza_dict.json", 'r') as json_file:
-    pizza_dict = json.load(json_file)
-
-# Load the JSON file
-with open("./artifacts/pizza_names.json", 'r') as json_file:
-    pizza_names = json.load(json_file)
 
     # Load the pipeline
 with open('./artifacts/model.pkl', 'rb') as file:
     loaded_pipeline = pickle.load(file)
 
-sizes_dict = {"Large": "l", "Medium": "m", "Small": "s", 
-                  "L": "l", "M": "m", "S": "s"}
 
+ingredients_table = pd.read_csv("data\processed\Ingredients_Weights.csv")
 
 st.set_page_config(page_title="DASPAM")
 st.title("DASPAM")
 st.write(
-    "welcome to ***DASPAM*** your personal Demand and Supply predictive Algrathmic Model"
+    "Welcome to ***DASPAM*** your personal Demand and Supply predictive Algorithmic Model"
 )
-st.image(image="components/res.jpg")
+# Display the image with Streamlit
+st.image("components/res.jpg", use_column_width=True, output_format='auto')
+
+# Center the image by adjusting the layout
+col_width = st.get_option('deprecation.showfileUploaderEncoding') - 100
+st.markdown(
+    f"""
+    <style>
+        .reportview-container .main .block-container{{
+            max-width: {col_width}px;
+            padding-top: 0px;
+            padding-right: 0px;
+            padding-left: 0px;
+            padding-bottom: 0px;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.caption(
-    "our app aims to help resturants predict thier products demand over a period of time"
+    "Our app aims to help resturants predict their products demand over a period of time"
 )
 
-data_file = st.file_uploader("Upload a file", type=("csv"))
+data_file = st.file_uploader("Upload data orders file", type=("csv", "xlsx"))
 if data_file is not None:  # this is used to check if the file was actually uploaded
-    data_frame = pd.read_csv(data_file)
-    st.write(data_frame.head())
+    file_extension = data_file.name.split('.')[-1].lower()
+    
+    if file_extension == 'csv':
+        data_frame = pd.read_csv(data_file)
+    elif file_extension in ['xls', 'xlsx']:
+        data_frame = pd.read_excel(data_file)
+    else:
+        st.error("Unsupported file format. Please upload a CSV or Excel file.")
+        data_frame = None
+    
+    if data_frame is not None:
+        st.write(data_frame.head())
 
-    pizza_names_list = list(pizza_names.keys())
-    pizza_type = st.selectbox(
-        label="Select the Type of pizza",
-        options=pizza_names_list,
-    )
+    # ingrediant_cost = data_frame.set_index('pizza_name')['clean_pizza_id'].to_dict()
 
-    single_pizza_type_options = ['Large', 'Medium', 'Small'] #pizza_dict[pizza_type]
-    pizza_size = st.radio(
-        label="Select pizza size", options=single_pizza_type_options, index=2
-    )
-    print("pizza_size", pizza_size, type(pizza_size))
-
-    st.write(f"Predict Next 12 Weeks For {pizza_type} {pizza_size}")
-    continue_butt = st.button(label="Predict")
-    if continue_butt:  # this checks if the pizza_size and pizza_type are as selected by user
-      
-        query_key = pizza_names[pizza_type] + "_" + sizes_dict[pizza_size.strip()]
-        print("query key", query_key)
-        pizza_data = data_frame[data_frame['pizza_id'] == query_key]
-
-        last_date_found = pizza_data['Week_Start'].max()
+    st.write("### Click to Show Next Week Ingrediants Demand For your Restaurent")
+    continue_butt = st.button(label="Show Results")
+    if continue_butt:  
+        
+        last_date_found = "2015-12-14"	#data_frame['Week_Start'].max()
 
         print("Last Date found", last_date_found)
 
-        # Convert the starting date to a datetime object
-        start_date = pd.to_datetime(last_date_found, format='%Y-%m-%d')
-
-        # Generate 12 weekly dates
-        weekly_dates = pd.date_range(start=start_date, periods=12, freq='W')
-        print("weekly dates", weekly_dates)
-        print("found data", pizza_data)
+        latest_week_df = data_frame[data_frame['Week_Start'] == last_date_found] 
 
         # transforming it to proper form
-        processed_data = preprocess_df(pizza_data)
+        processed_data = preprocess_df(latest_week_df)
         print("processed data", processed_data)
 
         predictions = np.round(loaded_pipeline.predict(processed_data))
-        print(predictions)
-
-
-        predictions_df = pd.DataFrame({'Week': [i for i in range(1, 13)],
-                                    "Date": weekly_dates, 
+                
+        predictions_df = pd.DataFrame({'Pizza ID': processed_data['pizza_id'],
                                     "Predicted Orders": predictions})
+        
+        predictions_df = predictions_df.sort_values("Predicted Orders", ascending=False)
 
-        predictions_df['Date'] =predictions_df['Date'].dt.date
+      # Display DataFrames side by side
+        col1, col2 = st.columns(2)
 
-        st.write(predictions_df)
+        with col1:
+            st.write(predictions_df)
+
+        with col2:
+            # Use custom CSS to set the width
+            # st.markdown(
+            #     f"""
+            #     <style>
+            #         .stDataFrame > div:nth-of-type(2) {{
+            #             flex: 0 0 70%;
+            #         }}
+            #     </style>
+            #     """,
+            #     unsafe_allow_html=True
+            # )
+            st.write(ingredients_table)
