@@ -22,7 +22,7 @@ st.write(
     "Welcome to ***DemandGuru*** your personal Demand and Supply predictive Algorithmic Model"
 )
 # Display the image with Streamlit
-st.image("components/res.jpg", use_column_width=True, output_format="auto")
+st.image("components/Why_The_Smile.png", use_column_width=True, output_format="auto")
 
 # Center the image by adjusting the layout
 col_width = st.get_option("deprecation.showfileUploaderEncoding") - 100
