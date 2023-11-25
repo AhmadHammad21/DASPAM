@@ -10,4 +10,6 @@ Welcome to **DemandGuru** Repository
     - The second table shows how much ingredients we need.
 
 ## Demo Video
-![Demo](./assets/DemandGuru.mp4)
+
+https://github.com/AhmadHammad21/DemandGuru/assets/77201365/5e1e8d19-aa36-4005-86c4-bf6f9445a309
+
